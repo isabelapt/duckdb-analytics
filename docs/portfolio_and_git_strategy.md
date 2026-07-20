@@ -153,6 +153,27 @@ Representa **um passo atômico e funcional** para atingir o objetivo da branch.
 
 ---
 
+## 7. Estratégias de Ramificação do Git no Mercado
+
+A engenharia de software adota diferentes fluxos de ramificação dependendo do nível de maturidade e da velocidade de entrega da equipe. Para o contexto deste projeto, escolhemos a combinação de **GitHub Flow** com **Stacked PRs**.
+
+### A. GitHub Flow (Adotado neste projeto)
+Focado em entrega contínua (Continuous Delivery). Não existe branch `develop`. A branch `main` sempre reflete o código estável em produção. Para qualquer alteração, cria-se uma branch a partir da `main`, abre-se um Pull Request (PR), passa-se por testes automatizados (CI/CD) e mescla-se direto na `main`.
+
+### B. Stacked PRs (Pull Requests Encadeados)
+Estratégia avançada de desenvolvimento paralelo para evitar bloqueios. Em vez de esperar a aprovação e merge da Branch 1 (`feature/setup-infra`) na `main` para começar a Branch 2 (`feature/data-cleansing-layer`), o desenvolvedor cria a Branch 2 diretamente do topo da Branch 1.
+
+No GitHub, abre-se:
+* **PR #1:** `feature/setup-infra` ➔ destina para `main`.
+* **PR #2:** `feature/data-cleansing-layer` ➔ destina para `feature/setup-infra`.
+
+Quando o PR #1 é aprovado e mesclado, o GitHub altera automaticamente o destino do PR #2 para a `main`, mantendo o histórico de revisão perfeitamente limpo e atômico.
+
+### C. GitFlow e a Branch `develop`
+Modelo clássico focado em lançamentos programados (releases). Nele, as features são integradas na branch `develop` (onde ocorrem testes de homologação de QA). A `main` só recebe código quando uma versão oficial (ex: `v1.0.0`) está pronta para produção através de uma branch de `release`. Esse modelo vem caindo em desuso devido à complexidade de sincronismo e lentidão para entregas rápidas.
+
+---
+
 ## 7. Próximos Passos (Workflow Recomendado)
 
 Siga este checklist estruturado para avançar no desenvolvimento:

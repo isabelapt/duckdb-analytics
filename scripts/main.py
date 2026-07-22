@@ -2,10 +2,10 @@ import duckdb
 import logging
 from pathlib import Path
 
-# Configuração básica de log para vermos o que o script está fazendo
+# Basic logging setup to trace pipeline execution
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Configurações de caminhos padronizadas para 2026-04
+# Standardized path configurations for 2026-04
 RAW_DATA_PATH = "data/raw/yellow_tripdata_2026-04.parquet"
 STAGING_DIR = Path("data/staging")
 PROCESSED_DIR = Path("data/processed")
@@ -13,12 +13,12 @@ PROCESSED_DIR = Path("data/processed")
 STAGING_DATA_PATH = STAGING_DIR / "taxi_cleaned_2026_04.parquet"
 
 def create_connection():
-    """Cria conexão com o DuckDB (usando em memória para o processamento batch)"""
+    """Creates a DuckDB connection (using in-memory mode for batch processing)"""
     return duckdb.connect(':memory:')
 
 def clean_raw_data(con, raw_path, staging_path):
-    """Lê o raw, aplica regras de qualidade (filtros) e salva o dado intermediário confiável (Camada Prata)."""
-    logging.info("Limpando dados brutos...")
+    """Reads raw data, applies quality rules (filters), and saves reliable intermediate data (Silver Layer)."""
+    logging.info("Cleansing raw data...")
     query = f"""
         COPY (
             SELECT * FROM '{raw_path}'
@@ -32,8 +32,8 @@ def clean_raw_data(con, raw_path, staging_path):
     con.execute(query)
 
 def transform_daily_metrics(staging_path):
-    """Calcula métricas diárias: volume, ticket médio e gorjetas."""
-    logging.info("Transformando dados: Métricas Diárias...")
+    """Calculates daily metrics: volume, average ticket, and tips."""
+    logging.info("Transforming data: Daily Metrics...")
     query = f"""
         SELECT 
             tpep_pickup_datetime::DATE AS date,
@@ -46,8 +46,8 @@ def transform_daily_metrics(staging_path):
     return query
 
 def transform_hourly_mobility(staging_path):
-    """Gera métricas de mobilidade agrupadas por hora, incluindo velocidade média."""
-    logging.info("Transformando dados: Métricas de Mobilidade por Hora...")
+    """Generates hourly mobility metrics including average speed."""
+    logging.info("Transforming data: Hourly Mobility Metrics...")
     query = f"""
         SELECT 
             EXTRACT(HOUR FROM tpep_pickup_datetime) AS hour_of_day,
@@ -63,14 +63,14 @@ def transform_hourly_mobility(staging_path):
     return query
 
 def transform_airport_metrics(staging_path):
-    """Calcula métricas para corridas de aeroporto (JFK, Newark) vs comuns."""
-    logging.info("Transformando dados: Métricas de Aeroporto...")
+    """Calculates metrics for airport trips (JFK, Newark) vs standard trips."""
+    logging.info("Transforming data: Airport Metrics...")
     query = f"""
         SELECT 
             CASE 
                 WHEN RatecodeID = 2 THEN 'JFK'
                 WHEN RatecodeID = 3 THEN 'Newark'
-                ELSE 'Comum' 
+                ELSE 'Standard' 
             END AS trip_type,
             COUNT(*) AS total_trips,
             AVG(trip_distance) AS avg_distance_miles,
@@ -85,8 +85,8 @@ def transform_airport_metrics(staging_path):
     return query
 
 def transform_payment_metrics(staging_path):
-    """Calcula a distribuição de meios de pagamento e taxa de gorjetas."""
-    logging.info("Transformando dados: Métricas por Meio de Pagamento...")
+    """Calculates payment method distribution and tip rates."""
+    logging.info("Transforming data: Payment Method Metrics...")
     query = f"""
         SELECT 
             CASE payment_type 
@@ -106,8 +106,8 @@ def transform_payment_metrics(staging_path):
     return query
 
 def transform_speed_metrics(staging_path):
-    """Calcula velocidade média das viagens agrupada por hora do dia."""
-    logging.info("Transformando dados: Métricas de Velocidade/Trânsito...")
+    """Calculates average trip speed grouped by hour of the day."""
+    logging.info("Transforming data: Speed/Traffic Metrics...")
     query = f"""
         SELECT 
             hour(tpep_pickup_datetime) AS hour_of_day,
@@ -122,8 +122,8 @@ def transform_speed_metrics(staging_path):
     return query
 
 def transform_weekday_metrics(staging_path):
-    """Calcula métricas agregadas por dia da semana (volume e gorjeta média)."""
-    logging.info("Transformando dados: Métricas por Dia da Semana...")
+    """Calculates aggregated metrics by day of the week (volume and average tip)."""
+    logging.info("Transforming data: Weekday Metrics...")
     query = f"""
         SELECT 
             dayname(tpep_pickup_datetime) AS weekday,
@@ -140,27 +140,27 @@ def transform_weekday_metrics(staging_path):
     return query
 
 def load_to_parquet(con, query, output_filename):
-    """Executa a query e salva o resultado em um arquivo Parquet."""
+    """Executes SQL query and exports the result set to a Parquet file."""
     output_path = PROCESSED_DIR / output_filename
-    logging.info(f"Exportando resultados para: {output_path}")
+    logging.info(f"Exporting results to: {output_path}")
     
-    # Executa a cópia direta para Parquet
+    # Executes direct copy to Parquet
     con.execute(f"COPY ({query}) TO '{output_path}' (FORMAT PARQUET)")
 
 def main():
-    # 1. Garante que a estrutura de pastas existe
+    # 1. Ensure output directory structure exists
     STAGING_DIR.mkdir(parents=True, exist_ok=True)
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     
     con = create_connection()
     
     try:
-        logging.info("Iniciando Pipeline ETL (Arquitetura Medalhão)...")
+        logging.info("Starting ETL Pipeline (Medallion Architecture)...")
         
-        # Etapa 1: Limpeza (Gera a Camada Prata)
+        # Step 1: Cleansing (Generates Silver Layer)
         clean_raw_data(con, RAW_DATA_PATH, STAGING_DATA_PATH)
         
-        # Etapa 2: Transformações Analíticas (Gera a Camada Ouro)
+        # Step 2: Analytical Transformations (Generates Gold Layer)
         load_to_parquet(con, transform_daily_metrics(STAGING_DATA_PATH), "mart_daily_metrics_2026_04.parquet")
         load_to_parquet(con, transform_hourly_mobility(STAGING_DATA_PATH), "mart_hourly_mobility_2026_04.parquet")
         load_to_parquet(con, transform_airport_metrics(STAGING_DATA_PATH), "mart_airport_revenue_2026_04.parquet")
@@ -168,9 +168,9 @@ def main():
         load_to_parquet(con, transform_speed_metrics(STAGING_DATA_PATH), "mart_speed_metrics_2026_04.parquet")
         load_to_parquet(con, transform_weekday_metrics(STAGING_DATA_PATH), "mart_weekday_metrics_2026_04.parquet")
         
-        logging.info("Pipeline ETL concluída com sucesso! Todos os Data Marts foram gerados.")
+        logging.info("ETL Pipeline completed successfully! All Data Marts were generated.")
     except Exception as e:
-        logging.error(f"Erro durante a execução do ETL: {e}")
+        logging.error(f"Error during ETL execution: {e}")
     finally:
         con.close()
 

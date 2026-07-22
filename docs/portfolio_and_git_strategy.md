@@ -1,92 +1,92 @@
-# Planejamento Estruturado: Testes, Git e Portfólio
+# Structured Planning: Testing, Git, and Portfolio
 
-Este documento organiza os próximos passos do projeto e serve como um **Guia Padrão de Inicialização de Projetos de Dados (ETL)**. Ele detalha as boas práticas e padrões da indústria para conduzir projetos de engenharia de software e dados desde o início.
+This document outlines project next steps and serves as a **Standard Guide for Data Project Initialization (ETL)**. It details industry best practices and standards for conducting software and data engineering projects from scratch.
 
 ---
 
-## 1. Guia Padrão de Inicialização de Projetos de Dados (ETL)
+## 1. Standard Data Project Initialization Guide (ETL)
 
-Quando iniciamos um projeto de dados do zero, a organização de pastas, dependências e versionamento deve seguir uma ordem lógica rígida para evitar retrabalho e vazamento de dados locais no Git.
+When starting a data project from scratch, directory organization, dependency management, and versioning must follow a strict logical sequence to prevent rework and local data leaks in Git.
 
 ```mermaid
 graph TD
-    A[1. git init] --> B[2. Criar .gitignore]
-    B --> C[3. Gestão de Dependências com UV]
-    C --> D[4. Estrutura de Pastas Padrão]
-    D --> E[5. Commit de Setup Inicial em feature/setup-infra]
-    E --> F[6. Pull Request PR para a main]
+    A[1. git init] --> B[2. Create .gitignore]
+    B --> C[3. Dependency Management with UV]
+    C --> D[4. Standard Folder Structure]
+    D --> E[5. Initial Setup Commit on feature/setup-infra]
+    E --> F[6. Pull Request PR to main]
 ```
 
-### Em qual branch fazer os primeiros commits de configuração e qual tipo usar?
+### Which branch to use for setup commits and which type?
 
-Seguindo as boas práticas de mercado e de ambientes profissionais, **nunca devemos commitar diretamente na branch `main`**, mesmo no setup inicial do projeto (configuração de dependências, estruturas de pastas e arquivos de documentação). O correto é criar uma branch dedicada (como `feature/setup-infra` ou `chore/initial-setup`) e integrá-la através de um **Pull Request (PR)**. Isso garante a proteção de branches principais, facilita revisões de código e validações automáticas de CI/CD.
+Following market best practices and professional environment standards, **never commit directly to the `main` branch**, even during initial project setup (dependency configuration, directory creation, and documentation files). The correct approach is creating a dedicated branch (such as `feature/setup-infra` or `chore/initial-setup`) and integrating changes via **Pull Request (PR)**. This guarantees main branch protection and facilitates code reviews and automated CI/CD checks.
 
-Os tipos de commits mais adequados segundo o padrão Conventional Commits para esse setup na branch de feature são:
+Recommended Conventional Commits types for setup on feature branches:
 
-| O que está sendo salvo | Branch de Origem | Tipo de Commit | Exemplo de Mensagem |
+| Content Staged | Origin Branch | Commit Type | Example Message |
 | :--- | :--- | :--- | :--- |
-| Arquivo `.gitignore` | `feature/setup-infra` | `chore` | `chore: adiciona arquivo .gitignore inicial` |
-| Dependências (`pyproject.toml`, `uv.lock`) | `feature/setup-infra` | `chore` (ou `chore(deps)`) | `chore: configura ambiente de dependencias com uv` |
-| Arquivo `README.md` | `feature/setup-infra` | `docs` | `docs: adiciona README inicial com explicacao do projeto` |
-| Estrutura de pastas vazias | `feature/setup-infra` | `chore` | `chore: cria estrutura de diretorios padrao (src, notebooks, data)` |
+| `.gitignore` file | `feature/setup-infra` | `chore` | `chore: add initial .gitignore file` |
+| Dependencies (`pyproject.toml`, `uv.lock`) | `feature/setup-infra` | `chore` (or `chore(deps)`) | `chore: setup dependencies environment with uv` |
+| `README.md` file | `feature/setup-infra` | `docs` | `docs: add initial README explaining project` |
+| Empty directory structure | `feature/setup-infra` | `chore` | `chore: create standard directory tree (src, notebooks, data)` |
 
 ---
 
-## 2. Estrutura de Pastas Padrão para Projetos de Dados
-Para projetos de ETL, crie a seguinte árvore de diretórios:
+## 2. Standard Folder Structure for Data Projects
+For ETL projects, create the following directory tree:
 ```bash
 mkdir -p data/raw data/processed db notebooks src tests scripts docs
 ```
-* `data/raw/`: Dados brutos imutáveis vindos das fontes originais.
-* `data/processed/`: Dados após limpeza, prontos para consumo.
-* `db/`: Arquivos locais de banco de dados DuckDB.
-* `src/`: Módulos de código reutilizáveis (Ingestão, Queries, Conexões).
-* `tests/`: Testes automatizados.
-* `scripts/`: Scripts orquestradores executáveis.
+* `data/raw/`: Immutable raw data from original sources.
+* `data/processed/`: Cleansed data ready for consumption.
+* `db/`: Local DuckDB database files.
+* `src/`: Reusable code modules (Ingestion, Queries, Connections).
+* `tests/`: Automated tests.
+* `scripts/`: Executable orchestrator scripts.
 
-### O que colocar no `.gitignore` de um projeto de dados:
+### What to include in a Data Project's `.gitignore`:
 ```text
-# Ambientes virtuais e ferramentas de pacotes
+# Virtual environments and package tools
 .venv/
 .ipynb_checkpoints/
 __pycache__/
 
-# Dados (Arquivos pesados e locais)
+# Heavy local data files
 data/raw/
 data/processed/
 data/temp/
 *.parquet
 *.csv
 
-# Bancos de dados locais
+# Local database files
 *.duckdb
 *.db
 *.sqlite
 
-# Variáveis de ambiente e segredos
+# Environment variables and secrets
 .env
 ```
 
 ---
 
-## 3. O Papel do Notebook no Portfólio: Storytelling, Plots e Versionamento
+## 3. Notebooks in Portfolios: Storytelling, Plots, and Versioning
 
-Em repositórios públicos voltados para portfólio, o **Notebook é a sua vitrine**. Enquanto os scripts em `src/` e `scripts/` provam sua competência técnica de engenharia, o notebook prova sua capacidade de traduzir dados em insights de negócio.
+In public portfolio repositories, the **Notebook is your showcase**. While scripts in `src/` and `scripts/` prove technical software engineering skills, notebooks demonstrate your capacity to translate data into business insights.
 
-### A importância de Gráficos (Plots) e Storytelling
-* **Use Gráficos Interativos**: Prefira usar o `plotly` ou `seaborn` ao invés do básico `matplotlib`. Gráficos interativos impressionam mais porque permitem que o leitor passe o mouse e explore os dados.
-* **Estrutura de Storytelling (Início, Meio e Fim)**:
-  1. **A Pergunta/Hipótese (Markdown)**: Explique o que você quer descobrir. Ex: *"Será que corridas de aeroporto compensam mais por milha do que corridas urbanas comuns?"*
-  2. **A Exploração (Código)**: Rode a query ou crie as colunas calculadas.
-  3. **A Visualização (Gráfico)**: Apresente o gráfico gerado.
-  4. **A Conclusão (Markdown)**: Resuma o achado em termos de negócio. Ex: *"Apesar das corridas para o JFK terem tarifas mais altas, o trânsito pesado na hora de pico reduz o faturamento por hora a níveis inferiores às corridas comuns"*.
+### Importance of Charts (Plots) and Storytelling
+* **Use Interactive Plots**: Prefer `plotly` or `seaborn` over basic `matplotlib`. Interactive charts allow readers to hover and explore data.
+* **Storytelling Structure**:
+  1. **Question / Hypothesis (Markdown)**: State what you aim to discover. E.g., *"Do airport trips yield higher revenue per mile than standard urban trips?"*
+  2. **Exploration (Code)**: Run queries or calculated columns.
+  3. **Visualization (Chart)**: Present generated charts.
+  4. **Conclusion (Markdown)**: Summarize findings in business terms. E.g., *"Although JFK trips carry higher fixed fares, peak traffic congestion reduces hourly earnings below standard trip rates."*
 
-### Boas Práticas de Versionamento de Notebooks no Git
-* **SEMPRE limpe os outputs antes de fazer commit**:
-  * Vá no menu **Kernel -> Restart & Clear Output** antes de dar `git add`.
-  * **Por quê?** Salvar gráficos interativos pesados ou tabelas HTML infla o tamanho do arquivo `.ipynb`, consome armazenamento no Git e polui o histórico de alterações (`git diff`), dificultando a revisão do seu código por outras pessoas.
-* **Automação recomendada (`nbstripout`)**:
-  * Para não esquecer de limpar os notebooks, instale e ative o `nbstripout` no seu repositório. Ele limpa as saídas automaticamente durante o commit:
+### Notebook Versioning Best Practices
+* **ALWAYS clear outputs before committing**:
+  * Navigate to **Kernel -> Restart & Clear Output** prior to running `git add`.
+  * **Why?** Saving heavy interactive plots or HTML tables inflates `.ipynb` file size, consumes Git storage, and pollutes `git diff` history.
+* **Recommended Automation (`nbstripout`)**:
+  * Install and enable `nbstripout` in your repository to automatically strip outputs during commits:
     ```bash
     uv add nbstripout --dev
     uv run nbstripout --install
@@ -94,110 +94,7 @@ Em repositórios públicos voltados para portfólio, o **Notebook é a sua vitri
 
 ---
 
-## 4. Status de Sincronismo do Projeto
+## 4. Project Sync Status
 
-### Diagnóstico de Sincronismo Atual:
-Os arquivos do repositório estão **perfeitamente sincronizados** sob a arquitetura Medalhão:
-1. **Camada Bronze (Raw)**: Ambos usam os dados reais de **Abril de 2026** (`yellow_tripdata_2026-04.parquet`).
-2. **Camada Silver (Staging)**: O script `scripts/main.py` faz a limpeza inicial na função `clean_raw_data` e gera o arquivo `taxi_cleaned_2026_04.parquet`.
-3. **Camada Gold (Analytics)**:
-   * O notebook e o script compartilham a mesma lógica e fórmulas matemáticas para as métricas (Daily, Hourly, Airport, Payment e Speed).
-   * No `main.py`, as queries analíticas foram otimizadas e limpas de filtros duplicados, consumindo diretamente o arquivo de staging limpo.
-
----
-
-## 5. Estrutura e Arquitetura de Testes para Projetos de Dados
-
-A arquitetura de testes em pipelines ETL garante que suas transformações de dados sejam confiáveis e reprodutíveis.
-
-```text
-duckdb-analytics/
-└── tests/
-    ├── __init__.py
-    ├── conftest.py          # Fixtures globais do pytest (ex: conexão DuckDB de teste)
-    ├── test_ingestion.py    # Valida download e leitura dos dados brutos
-    └── test_transform.py    # Valida queries de agregação e limpeza
-```
-
-### O papel do `conftest.py` (Fixtures do PyTest)
-O `conftest.py` é usado para criar dados fictícios na memória (Mock Data) e compartilhar recursos entre os testes sem poluir o código.
-* **Exemplo de conexão DuckDB para testes**:
-  ```python
-  import pytest
-  import duckdb
-  
-  @pytest.fixture(scope="function")
-  def temp_db_conn():
-      """Gera uma conexão limpa em memória para cada função de teste."""
-      conn = duckdb.connect(":memory:")
-      yield conn
-      conn.close()
-  ```
-
----
-
-## 6. Granularidade: Feature (Branch) vs. Commit
-
-Para manter o histórico legível por recrutadores no seu portfólio, adote esta regra de granularidade:
-
-### A Branch (Feature)
-Representa **uma entrega completa** de negócio ou alteração estrutural.
-* *Exemplo:* `feature/streamlit-dashboard`
-
-### O Commit
-Representa **um passo atômico e funcional** para atingir o objetivo da branch.
-* *Mensagens padrão no Imperativo (Conventional Commits):*
-  * `feat(pipeline): adiciona calculo de velocidade media`
-  * `test(pipeline): valida tratamento de datas nulas`
-  * `docs(readme): adiciona guia de instalacao local`
-
----
-
-## 7. Estratégias de Ramificação do Git no Mercado
-
-A engenharia de software adota diferentes fluxos de ramificação dependendo do nível de maturidade e da velocidade de entrega da equipe. Para o contexto deste projeto, escolhemos a combinação de **GitHub Flow** com **Stacked PRs**.
-
-### A. GitHub Flow (Adotado neste projeto)
-Focado em entrega contínua (Continuous Delivery). Não existe branch `develop`. A branch `main` sempre reflete o código estável em produção. Para qualquer alteração, cria-se uma branch a partir da `main`, abre-se um Pull Request (PR), passa-se por testes automatizados (CI/CD) e mescla-se direto na `main`.
-
-### B. Stacked PRs (Pull Requests Encadeados)
-Estratégia avançada de desenvolvimento paralelo para evitar bloqueios. Em vez de esperar a aprovação e merge da Branch 1 (`feature/setup-infra`) na `main` para começar a Branch 2 (`feature/data-cleansing-layer`), o desenvolvedor cria a Branch 2 diretamente do topo da Branch 1.
-
-No GitHub, abre-se:
-* **PR #1:** `feature/setup-infra` ➔ destina para `main`.
-* **PR #2:** `feature/data-cleansing-layer` ➔ destina para `feature/setup-infra`.
-
-Quando o PR #1 é aprovado e mesclado, o GitHub altera automaticamente o destino do PR #2 para a `main`, mantendo o histórico de revisão perfeitamente limpo e atômico.
-
-### C. GitFlow e a Branch `develop`
-Modelo clássico focado em lançamentos programados (releases). Nele, as features são integradas na branch `develop` (onde ocorrem testes de homologação de QA). A `main` só recebe código quando uma versão oficial (ex: `v1.0.0`) está pronta para produção através de uma branch de `release`. Esse modelo vem caindo em desuso devido à complexidade de sincronismo e lentidão para entregas rápidas.
-
----
-
-## 7. Próximos Passos (Workflow Recomendado)
-
-Siga este checklist estruturado para avançar no desenvolvimento:
-
-### Fase 1: Finalizar a Branch Atual (`feature/setup-and-analysis`)
-- [ ] Adicionar e comitar as alterações feitas no notebook (`01_exploratory_analysis.ipynb`) no imperativo (lembrando de limpar outputs!).
-- [ ] Adicionar e comitar a pasta `scripts/` (contendo o script `main.py`).
-- [ ] Mesclar a branch na `main` localmente ou via GitHub PR.
-
-### Fase 2: Configurar a Infraestrutura de Testes
-- [ ] Criar a branch `chore/test-infrastructure`.
-- [ ] Instalar o `pytest` (`uv add pytest --dev`).
-- [ ] Criar a pasta `tests/` e configurar o `conftest.py`.
-- [ ] Mesclar na `main`.
-
-### Fase 3: Modularizar o Código e Escrever Testes de Feature
-- [ ] Criar a branch `feature/modularization-and-tests`.
-- [ ] Mover as consultas SQL e conexões para a pasta `src/`.
-- [ ] Escrever os testes unitários em `tests/test_transform.py` para validar as funções do `src/`.
-- [ ] Mesclar na `main`.
-
-### Fase 4: Visualização e Portfólio (Streamlit)
-- [ ] Criar a branch `feature/dashboard-streamlit`.
-- [ ] Instalar o streamlit (`uv add streamlit`).
-- [ ] Criar o dashboard interativo lendo os Parquet de `data/processed/`.
-- [ ] Escrever um `README.md` de alta qualidade com fotos do dashboard e resultados de performance.
-- [ ] Publicar no GitHub público.
+### Current Synchronization Diagnosis:
+Repository files are **fully synchronized** under Medallion Architecture:

@@ -12,7 +12,8 @@ from scripts.transform import build_gold_data_marts
 # Basic logging setup to trace pipeline execution
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s')
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
 # Standardized path configurations for 2026-04
 RAW_DATA_PATH = "data/raw/yellow_tripdata_2026-04.parquet"
@@ -21,9 +22,11 @@ PROCESSED_DIR = Path("data/processed")
 
 STAGING_DATA_PATH = STAGING_DIR / "taxi_cleaned_2026_04.parquet"
 
+
 def create_connection():
-    """Creates a DuckDB connection (using in-memory mode for batch processing)"""
+    """Creates a DuckDB connection (using in-memory mode for batch processing)."""
     return duckdb.connect(':memory:')
+
 
 def main():
     # 1. Ensure output directory structure exists
@@ -36,24 +39,30 @@ def main():
         logging.info("Starting ETL Pipeline (Medallion Architecture)...")
         
         # Step 1: Cleansing (Generates Silver Layer)
+        logging.info("Executing Silver Layer Data Cleansing...")
         clean_raw_data(con, RAW_DATA_PATH, str(STAGING_DATA_PATH))
         
         # Step 2: Analytical Transformations (Generates Gold Layer)
+        logging.info("Executing Gold Layer Transformations...")
         build_gold_data_marts(con, str(STAGING_DATA_PATH), str(PROCESSED_DIR))
         
-        # Commit em caso de sucesso total
-        con.execute("COMMIT;")
         logging.info("ETL Pipeline completed successfully! All Data Marts were generated.")
+
     except Exception as e:
-        # Rollback em caso de erro (Safety Net)
-        logging.error(f"Error during ETL execution: {e}")
-        con.execute("ROLLBACK;")
+        # Defensive rollback handling in case explicit transactions were active
+        try:
+            con.execute("ROLLBACK;")
+        except duckdb.TransactionException:
+            # Transaction already closed or auto-committed by DuckDB engine
+            pass
+            
+        logging.error(f"Pipeline execution failed: {e}")
         raise e
 
     finally:
         con.close()
         logging.info("DuckDB connection closed gracefully.")
 
+
 if __name__ == "__main__":
     main()
-

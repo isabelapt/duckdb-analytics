@@ -27,7 +27,6 @@ duckdb-analytics/
 │   ├── transform.py         # Business logic & analytics KPIs (Gold)
 │   └── main.py              # Central pipeline orchestrator
 ├── tests/
-│   ├── __init__.py
 │   └── test_quality_gates.py
 ├── .gitignore
 ├── Dockerfile

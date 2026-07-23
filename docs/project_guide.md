@@ -22,7 +22,6 @@ duckdb-analytics/
 ├── notebooks/
 │   └── 01_exploratory_analysis.ipynb
 ├── scripts/
-│   ├── __init__.py
 │   ├── clean.py             # Atomic data cleansing (Silver)
 │   ├── transform.py         # Business logic & analytics KPIs (Gold)
 │   └── main.py              # Central pipeline orchestrator

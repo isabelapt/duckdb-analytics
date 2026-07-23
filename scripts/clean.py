@@ -58,7 +58,7 @@ def standardize_types(source_cte: str) -> str:
             congestion_surcharge::DOUBLE AS congestion_surcharge,
             Airport_fee::DOUBLE AS Airport_fee,
             cbd_congestion_fee::DOUBLE AS cbd_congestion_fee
-        FROM ({source_cte})
+        FROM ({source_cte}) AS src
     """
 
 def validate_domains(source_cte: str) -> str:
@@ -66,7 +66,7 @@ def validate_domains(source_cte: str) -> str:
     logging.info("Cleansing: Validating business domain rules (P&L and Occupancy filter)...")
     return f"""
         SELECT * 
-        FROM ({source_cte})
+        FROM ({source_cte}) AS src
         WHERE total_amount > 0 
           AND fare_amount > 0
           AND trip_distance > 0 -- Minimum spatial threshold (eliminates GPS hangs and shadowing)
@@ -80,7 +80,7 @@ def remove_outliers(source_cte: str) -> str:
     logging.info("Cleansing: Removing time and space outliers (150 miles and 3h limits)...")
     return f"""
         SELECT * 
-        FROM ({source_cte})
+        FROM ({source_cte}) AS src
         WHERE date_diff('minute', tpep_pickup_datetime, tpep_dropoff_datetime) BETWEEN 1 AND 180
           AND trip_distance <= 150.0
     """

@@ -25,4 +25,4 @@ dev = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "-v --tb=short"
+addopts = "--cov=scripts --cov-report=term-missing"

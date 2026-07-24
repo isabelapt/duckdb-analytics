@@ -27,6 +27,16 @@ jobs:
             - name: Install Dependencies
               run: uv sync --frozen
 
+            - name: Setup Mock/Sample Raw Data
+                run: |
+                mkdir -p data/raw
+                # Exemplo: baixar um dataset de amostra ou criar via script
+                uv run python -c "
+                import duckdb, os
+                os.makedirs('data/raw', exist_ok=True)
+                duckdb.execute(\"COPY (SELECT 1 AS VendorID, '2026-04-01 10:00:00'::TIMESTAMP AS tpep_pickup_datetime, '2026-04-01 10:15:00'::TIMESTAMP AS tpep_dropoff_datetime, 1.0 AS passenger_count, 2.5 AS trip_distance, 1 AS RatecodeID, 'N' AS store_and_fwd_flag, 1 AS PULocationID, 2 AS DOLocationID, 1 AS payment_type, 15.0 AS fare_amount, 1.0 AS extra, 0.5 AS mta_tax, 3.0 AS tip_amount, 0.0 AS tolls_amount, 0.3 AS improvement_surcharge, 19.8 AS total_amount, 2.5 AS congestion_surcharge, 0.0 AS Airport_fee, 0.0 AS cbd_congestion_fee) TO 'data/raw/yellow_tripdata_2026-04.parquet' (FORMAT PARQUET);\")
+                "
+
             - name: Run Pytest & Measure Coverage
               run: |
                   uv run python -m pytest --cov=scripts tests/

@@ -3,6 +3,45 @@ import duckdb
 import pytest
 from scripts.main import main
 from unittest.mock import patch
+from pathlib import Path
+
+RAW_DATA_PATH = Path("data/raw/yellow_tripdata_2026-04.parquet")
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_mock_raw_data():
+    """Ensures that the data/raw folder and a minimum parquet file exist for testing."""
+    RAW_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
+    
+    if not RAW_DATA_PATH.exists():
+        # Creates a synthetic parquet file with the minimum expected structure
+        con = duckdb.connect(":memory:")
+        con.execute(f"""
+            COPY (
+
+                SELECT 
+                    1 AS VendorID,
+                    '2026-04-01 10:00:00'::TIMESTAMP AS tpep_pickup_datetime,
+                    '2026-04-01 10:15:00'::TIMESTAMP AS tpep_dropoff_datetime,
+                    1.0 AS passenger_count,
+                    2.5 AS trip_distance,
+                    1 AS RatecodeID,
+                    'N' AS store_and_fwd_flag,
+                    1 AS PULocationID,
+                    2 AS DOLocationID,
+                    1 AS payment_type,
+                    15.0 AS fare_amount,
+                    1.0 AS extra,
+                    0.5 AS mta_tax,
+                    3.0 AS tip_amount,
+                    0.0 AS tolls_amount,
+                    0.3 AS improvement_surcharge,
+                    19.8 AS total_amount,
+                    2.5 AS congestion_surcharge,
+                    0.0 AS Airport_fee,
+                    0.0 AS cbd_congestion_fee
+            ) TO '{RAW_DATA_PATH}' (FORMAT PARQUET);
+        """)
+        con.close()
 
 
 @pytest.fixture(scope="module", autouse=True)

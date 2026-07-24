@@ -1,3 +1,4 @@
+import argparse
 import duckdb
 import logging
 import sys
@@ -28,10 +29,17 @@ def create_connection():
     return duckdb.connect(':memory:')
 
 
-def main():
-    # 1. Ensure output directory structure exists
-    STAGING_DIR.mkdir(parents=True, exist_ok=True)
-    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+def main(period: str = "2026-04"):
+    formatted_period = period.replace("-", "_")
+
+    raw_data_path = f"data/raw/yellow_tripdata_{period}.parquet"
+    staging_dir = Path("data/staging")
+    processed_dir = Path("data/processed")
+    staging_data_path = STAGING_DIR / f"taxi_cleaned_{formatted_period}.parquet"
+
+    # Ensure output directory structure exists
+    staging_dir.mkdir(parents=True, exist_ok=True)
+    processed_dir.mkdir(parents=True, exist_ok=True)
     
     con = create_connection()
     
@@ -65,4 +73,13 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Orchestrate DuckDB Medallion Pipeline")
+    parser.add_argument(
+        "--period",
+        type=str,
+        default="2026-04",
+        help="Period to process in YYYY-MM format (default: 2026-04)"
+    )
+    args = parser.parse_args()
+
+    main(period=args.period)
